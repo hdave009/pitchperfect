@@ -1,19 +1,24 @@
-import sqlite3
 import os
+import sqlite3
 
-DB_NAME = "pitchperfect.db"
+# Define a persistent directory in macOS Application Support
+APP_SUPPORT_DIR = os.path.join(
+    os.path.expanduser("~"), "Library", "Application Support", "PitchPerfect"
+)
+os.makedirs(APP_SUPPORT_DIR, exist_ok=True)
+
+DB_PATH = os.path.join(APP_SUPPORT_DIR, "pitchperfect.db")
 
 
 def get_connection():
-    return sqlite3.connect(DB_NAME)
+    return sqlite3.connect(DB_PATH)
 
 
 def init_db():
-    """Initializes the database and creates tables if they don't exist."""
+    """Initializes database in persistent Application Support path."""
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Table 1: Users profile
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS users (
@@ -23,7 +28,6 @@ def init_db():
     """
     )
 
-    # Table 2: Game scores & performance tracking
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS scores (
@@ -42,7 +46,6 @@ def init_db():
 
 
 def get_all_users():
-    """Returns a list of all user tuples (id, name)."""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM users ORDER BY name")
@@ -52,7 +55,6 @@ def get_all_users():
 
 
 def create_user(name):
-    """Creates a new user and returns their assigned id."""
     conn = get_connection()
     cursor = conn.cursor()
     try:
@@ -60,7 +62,6 @@ def create_user(name):
         conn.commit()
         user_id = cursor.lastrowid
     except sqlite3.IntegrityError:
-        # User already exists, fetch their existing id
         cursor.execute("SELECT id FROM users WHERE name = ?", (name,))
         user_id = cursor.fetchone()[0]
     conn.close()
@@ -68,7 +69,6 @@ def create_user(name):
 
 
 def save_score(user_id, accuracy, total_notes):
-    """Records a completed game score."""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(
@@ -83,7 +83,6 @@ def save_score(user_id, accuracy, total_notes):
 
 
 def get_user_history(user_id):
-    """Fetches past scores for trending history."""
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute(

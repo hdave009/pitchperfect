@@ -10,6 +10,16 @@ from database import init_db, get_all_users, create_user, save_score, get_user_h
 from helpers import draw_staff, draw_sharp_symbol
 from visualization import create_trend_chart_surface
 
+import os
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller bundle."""
+    if hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
+
+
 # Initialize Pygame & Database
 pygame.init()
 init_db()
@@ -35,9 +45,10 @@ GREEN = (80, 200, 120)
 BLUE = (70, 130, 180)
 NOTE_BLACK = (230, 230, 240)
 
-# Load Treble Clef Image
+# Use it when loading images:
 try:
-    clef_image = pygame.image.load("treble_clef.png").convert_alpha()
+    clef_path = resource_path("treble_clef.png")
+    clef_image = pygame.image.load(clef_path).convert_alpha()
     clef_image = pygame.transform.smoothscale(clef_image, (50, 130))
 except Exception:
     clef_image = None
